@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Using PGP</title>
+  </head>
+  <body style="max-width: 600px; margin-left: 15px; margin-right: auto;">
+    <h1>Using PGP (Pretty Good Privacy)</h1>
+    <p>Date: 7 July 2024 — <a href="https://qasim-ijaz.github.io">[Home]</a>
+    </p>
+    <p>Recently I began learning about PGP, PGP also known as Pretty Good Privacy is a encryption/cryptography tool developed by Phil Zimmermann. It is a tool which allows users to encrypt, sign and decrypt a variety of things such as text, files, emails and much more. This article will provide an overview of using PGP and present some of the key things I learned while researching PGP.</p>
+    <p>PGP is an old tool developed in 1991, and it has evolved with modern versions available through tools such as GPG (GNU Privacy Guard). GPG implements the OpenPGP standard, to ensure interoperability between PGP implementations. OpenPGP provides a formal specification for encryption, decryption and much more across different software.</p>
+    <h2>How does it work?</h2>
+    <p>GPG supports various features but I will be focusing on some of the key features. These include symmetric cryptography, asymmetric cryptography and digital signatures. If you are unfamiliar with these concepts here is a high-level overview of each:</p>
+    <ul>
+      <li>Symmetric cryptography involves the creation of a single secret key that can be used to encrypt and decrypt data, files, etc. The recipient of any data encrypted with this secret key can use the same key to decrypt the message. In short, symmetric cryptography relies on a secret key that both encrypts and decrypts messages.</li>
+      <li>Asymmetric cryptography involves the usage of a public key and a private key. If someone wants to send a recipient a message, they must encrypt the message with the recipient's public key. The recipient can then decrypt the message with their private key. The main point here is that the private key is kept secret and is not known to the sender of the message.</li>
+      <li>Digital signatures provide a way to ensure that a message you receive has not been tampered with and that the message is from the person associated with a specific public key. The sender will hash the message they want to send; this hash is then encrypted using the sender's private key. The encrypted hash is then paired with the message and sent to the recipient. The recipient can then decrypt the hash using the sender's public key, rehash the message, and compare the hashes to check if they are exactly the same.</li>
+    </ul>
+    <h2>Using GPG</h2>
+    <p>To begin using PGP, we can install GPG, if it is not already installed on your Linux system you can install it using:</p>
+    <pre>
+    <code>sudo apt install gpg</code>
+    </pre>
+    <p>Now we must start by creating our keys, we can run the following command to allow us to customise our key setup:</p>
+    <pre>
+    <code>gpg --full-gen-key</code>
+    </pre>
+    <p>Running this command will prompt us for the following information:</p>
+    <ul>
+      <li>The type of encryption we want: For this example I used the default (RSA)</li>
+      <li>The key size: I selected the default 3072, larger key size's are harder to brute-force, however encryption and decryption speeds can be slower, furthermore resulting ciphertext may also be larger</li>
+      <li>The key expiry date: Although this is not necessary setting an expiry date is useful because it encourages regular key rotations.</li>
+      <li>Name and email address: This is used for key identification purposes</li>
+      <li>A passphrase: GPG requires that users provide a passphrase whenever the key is used as an additional layer of security</li>
+    </ul>
+    <h2>Keyservers</h2>
+    <p>Keyservers are servers which maintain a collection of public keys, they allow users to upload their public keys as well as allow users to find the public keys of others. With GPG we can upload our public key to a keyserver and from there anyone can find our public key and communicate with us.</p>
+    <p>To use GPG to upload our key to a keyserver such as <a href="https://keyserver.ubuntu.com/" target="_blank" rel="noopener noreferrer">https://keyserver.ubuntu.com/</a> we can use the following command: </p>
+    <pre>
+    <code>gpg --keyserver KEYSERVER_URL --send-keys KEY_FINGERPRINT</code>
+    </pre>
+    <p>Each key-pair you create will have a unique fingerprint, this fingerprint is unique 40 character hexadecimal string and can be viewed using:</p>
+    <pre>
+    <code>gpg --list-keys</code>
+    </pre>
+    <p>A key part of keyservers is that they often communicate and share information with each other. This means you can upload to any keyserver your public key will most likely be propagated to various other keyservers.</p>
+    <h2>Verifying, Exporting and Importing Keys</h2>
+    <p>Once we have created our keys we may want to move the keys between different machines or even share our public key with someone, to do this we can export the public keys and private keys. GPG exports typically are handled in two main file formats:</p>
+    <ul>
+      <li>ASCII-armored: This is a text-based format for GPG keys, it has a .asc file extension</li>
+      <li>Binary: This is a binary format for GPG keys, it has a .gpg file extension</li>
+    </ul>
+    <p>To export private and public keys in GPG into the ASCII-armored form, we can use the following commands respectively:</p>
+    <pre>
+    <code>gpg --export --armor &gt; public_keys.asc</code>
+    </pre>
+    <pre>
+    <code>gpg --export-secret-keys --armor &gt; private_keys.asc</code>
+    </pre>
+    <p>To use the binary format we can remove the 'armor' flag and instead redirect output to a .gpg file.</p>
+    <p>If we have someones public key we may want to add it to our keyring, to do this we can import the keys using the following commands respectively:</p>
+    <pre>
+    <code>gpg --import public_keys.asc</code>
+    </pre>
+    <pre>
+    <code>gpg --import private_keys.asc</code>
+    </pre>
+    <p>Note: GPG also allows us to import/export specific keys by providing a key-id or key fingerprint, check the <a href="https://www.gnupg.org/documentation/manpage.html" target="_blank" rel="noopener noreferrer">GPG man page</a> site for more information. </p>
+    <p>During GPG key exchanges (for example, when someone gives you their public key), an additional verification step is often taken to ensure that the key you have received is genuinely from the person you intend to communicate with. This is done by verifying the fingerprint of the key. A fingerprint is a unique sequence of characters that serves as a concise representation of a GPG key.</p>
+    <p>To verify the fingerprint of a key, the owner must provide you with the fingerprint. You can then use the following command to retrieve the actual fingerprint of the key:</p>
+    <pre>
+    <code>gpg --fingerprint KEY_EMAIL_OR_ID</code>
+    </pre>
+    <p>With these two fingerprints, you must compare them to ensure they match exactly. If they do, you can be confident that you have a correct copy of the key.</p>
+    <h2>Encryption and Decryption (Files)</h2>
+    <p>GPG can be used to encrypt a wide range of data such as emails, files, directories, etc.</p>
+    <p>Starting off with file encryption we can encrypt a file with the following command:</p>
+    <pre>
+    <code>gpg --output message.gpg --encrypt --recipient recipient-email@example.com message.txt</code>
+    </pre>
+    <p>This command will encrypt the file 'message.txt' using the public key associated with the email 'recipient-email@example.com', creating an encrypted file named 'message.gpg'.</p>
+    <p>To decrypt the 'message.gpg' file we can use the following command:</p>
+    <pre>
+    <code>gpg --decrypt message.gpg</code>
+    </pre>
+    <p>This command will display the decrypted content to the screen or if you prefer you can use the '--output' option to write the decrypted output to a file.</p>
+    <h2>Encryption and Decryption (Directories)</h2>
+    <p>Although GPG doesn't support directory encryption directly, it is possible to encrypt a directory by first converting it into a tarball or a zip archive, and then encrypting the resulting file. To start off we can create a zip archive using:</p>
+    <pre>
+    <code>zip -r result.zip some_directory</code>
+    </pre>
+    <p>After this, we can encrypt the resulting zip archive 'result.zip' in the same way as we would encrypt any other file, as shown above. Similarly, we can use the same decryption command to decrypt it.</p>
+    <pre>
+    <code>gpg --output result.zip.gpg --encrypt --recipient recipient-email@example.com result.zip</code>
+    </pre>
+    <pre>
+    <code>gpg --output result.zip --decrypt result.zip.gpg</code>
+    </pre>
+    <h2>Symmetric Key Encryption and Decryption</h2>
+    <p>So far we have looked at asymmetric cryptography, where there exists a public key and a private key. Now we will take a look at GPG's support for symmetric key cryptography.</p>
+    <p>GPG supports a wide range of cryptographic algorithms to enable users to encrypt such as IDEA, 3DES, BLOWFISH, AES and much more.</p>
+    <p>GPG symmetric encryption works by prompting the user for a passphrase, this passphrase is then used to derive a secret key. To encrypt a file using symmetric key encryption we can use the following command:</p>
+    <pre>
+    <code>gpg --output encrypted_secret.gpg --symmetric --cipher-algo AES256 secret_file</code>
+    </pre>
+    <p>This command will encrypt the file 'secret_file' using AES-256 encryption algorithm, writing the output to a file 'encrypted_secret.gpg'. It is very important that a secure passphrase and a secure encryption algorithm is chosen.</p>
+    <p>The decryption process remains the same, users can decrypt the file by using the '--decrypt' option.</p>
+    <h2>Digital Signatures</h2>
+    <p>One of GPG's key features is the support for digital signatures, which involves signing data and verifying signatures on that data. Signatures are created using the private key of the signer and verified using the public key of the signer. For example, a developer could sign a software package release, and users could then use the developer's public key to verify the signature and the authenticity of the package.</p>
+    <p>GPG supports 3 main ways of signing data:</p>
+    <ul>
+      <li>Standard Digital Signatures: The data is compressed, signed, and outputted in a binary format. The resulting signature is typically stored in a .gpg file.</li>
+      <li>Clearsigned Digital Signatures: The data is signed while maintaining its readable format. The resulting file contains both the original data and the signature in a human-readable format.</li>
+      <li>Detached Digital Signatures: A signature is created separately from the data. The resulting signature file does not include the original data and is typically stored in a .sig or .asc file.</li>
+    </ul>
+    <p>To sign a file using a standard digital signature we can use the following command:</p>
+    <pre>
+    <code>gpg --sign some_file</code>
+    </pre>
+    <p>This command creates a .gpg file with the signature in binary form.</p>
+    <p>To sign a file using a clearsigned digital signature we can use the following command:</p>
+    <pre>
+    <code>gpg --clearsign some_file</code>
+    </pre>
+    <p>This command creates a .asc file with the signature and a header with the original data that is being signed.</p>
+    <p>To sign a file using a detached digital signature we can use the following command:</p>
+    <pre>
+    <code>gpg --detach-sign some_file</code>
+    </pre>
+    <p>This command creates a .sig file with the signature.</p>
+    <p>Another key part of digital signatures is verifying signatures, GPG makes this very easy and it can be done using the following command:</p>
+    <pre>
+    <code>gpg --verify signature_file</code>
+    </pre>
+    <p>Note: when verifying detached signatures the above command will work if the original data is in the same directory as the signature file. If it is not then you need to include the path to the original data at the end of the command.</p>
+    <h2>Conclusion</h2>
+    <p>GPG is a very powerful tool for strengthening data security and privacy. While researching GPG and learning how to use it, I gained a deep understanding of its capabilities and potential applications. Moving forward, I plan to delve further into GPG to enhance my knowledge and usage.</p>
+  </body>
+</html>
